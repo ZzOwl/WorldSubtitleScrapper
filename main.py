@@ -1,5 +1,52 @@
 from os import link, name
-from selenium import webdriver
+# from selenium import webdriver
+from bs4 import BeautifulSoup
+from flask.globals import request
+import requests
+
+
+def bs(name):
+    url=f"https://worldsubtitle.site/?s={name}"
+    res=requests.get(url)
+    soup=BeautifulSoup(res.content, "html.parser")
+    my_divs= soup.find_all("div",{"class": "cat-post-titel"})
+    result = list()
+    for div in my_divs:
+        for i in div.find_all("a"):
+            result.append({
+                "link": i["href"],
+                "title": i["title"]
+                
+            }
+                )
+    return result
+
+# print(f"name:{name}\nlinks:{link}")
+
+def links(link):
+    res=requests.get(link)
+    soup=BeautifulSoup(res.content, "html.parser")
+    my_divs_name = soup.find_all("div",{"class":"new-link-1"})
+    my_divs_status = soup.find_all("div",{"class":"new-link-2"})
+    my_divs_link = soup.find_all("div",{"class":"new-link-3"})
+    name,status,linkk=[],[],[]
+    for names in my_divs_name:
+        name.append(names.text.strip())
+    for statuss in my_divs_status:
+        status.append(statuss.text.strip())
+    for lin in my_divs_link:
+        for l in lin.find_all("a"):
+            linkk.append(l["href"])
+    newlink=list()
+    for i in range(len(name)):
+        newlink.append({
+            "name":name[i],
+            "status": status[i],
+            "link": linkk[i]
+        })
+    return newlink
+    # print(f"names:{name}\nstatus:{status}\nlink:{linkk}")
+
 def seleniumWork():
     browser = webdriver.Chrome(executable_path=r".\driver\chromedriver.exe")
 
@@ -32,4 +79,6 @@ def seleniumWork():
 
 
 if __name__ == "__main__":
-    seleniumWork()
+    # seleniumWork()
+    # bs("avengers")
+    links('https://worldsubtitle.site/tv-series/%d8%af%d8%a7%d9%86%d9%84%d9%88%d8%af-%d8%b2%db%8c%d8%b1%d9%86%d9%88%db%8c%d8%b3-%d9%81%d8%a7%d8%b1%d8%b3%db%8c-%d8%b3%d8%b1%db%8c%d8%a7%d9%84-inside-no-9-2014/')
